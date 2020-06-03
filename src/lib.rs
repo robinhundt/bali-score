@@ -13,7 +13,6 @@ pub mod fasta;
 pub struct Alignment {
     pub name: String,
     pub aligned_data: Vec<Sequence>,
-    pub unaligned_data: Vec<Sequence>,
     unaligned_to_aligned_pos: Vec<Vec<usize>>,
     pub core_blocks: Vec<bool>,
 }
@@ -41,11 +40,7 @@ pub struct AlignmentScores {
     pub column_score: f64,
 }
 
-pub fn compute_scores(
-    ref_alignment: &Alignment,
-    test_alignment: &Alignment,
-    ignore_symbol_case: bool,
-) -> AlignmentScores {
+pub fn compute_scores(ref_alignment: &Alignment, test_alignment: &Alignment) -> AlignmentScores {
     let seq_cnt = test_alignment.aligned_data.len();
     let mut correctly_aligned = 0;
     let mut correct_column_count = 0;
@@ -91,12 +86,7 @@ pub fn compute_scores(
                 pos: column - gaps_per_seq[b_idx],
             };
 
-            let symbols_aligned =
-                ignore_symbol_case || a.is_ascii_uppercase() && b.is_ascii_uppercase();
-
-            if symbols_aligned
-                && ref_alignment.pos_aligned(site_a, site_b) == PositionAlignment::Correct
-            {
+            if ref_alignment.pos_aligned(site_a, site_b) == PositionAlignment::Correct {
                 correct_in_column[a_idx] = true;
                 correct_in_column[b_idx] = true;
                 correctly_aligned += 1;
@@ -150,15 +140,14 @@ impl Add for AlignmentScores {
 impl Alignment {
     pub const GAP_CHARACTER: u8 = b'-';
     pub fn new(name: String, aligned_data: Vec<Sequence>, core_blocks: Vec<bool>) -> Self {
-        let (unaligned_data, pos_mapping) = aligned_data
+        let pos_mapping = aligned_data
             .iter()
-            .map(|seq| seq.clone().into_unaligned())
-            .unzip();
+            .map(|seq| seq.unaligned_pos_mapping())
+            .collect();
 
         Self {
             name,
             aligned_data,
-            unaligned_data,
             unaligned_to_aligned_pos: pos_mapping,
             core_blocks,
         }
@@ -204,20 +193,15 @@ impl Sequence {
         self.data.is_empty()
     }
 
-    /// Returns new Sequence with stripped gaps und Vec that matches each unaligned position to
-    /// it's original aligned position
-    fn into_unaligned(self) -> (Self, Vec<usize>) {
-        let (positions, no_gap_data) = self
-            .data
-            .into_iter()
+    /// Returns Vec of indices. This is used to map the index of an aligned
+    /// residue to it's index in the unaligned sequence.
+    fn unaligned_pos_mapping(&self) -> Vec<usize> {
+        self.data
+            .iter()
             .enumerate()
-            .filter(|(_, el)| *el != Alignment::GAP_CHARACTER)
-            .unzip();
-        let unaligned_sequence = Self {
-            name: self.name,
-            data: no_gap_data,
-        };
-        (unaligned_sequence, positions)
+            .filter(|(_pos, residue)| **residue != Alignment::GAP_CHARACTER)
+            .map(|(pos, _)| pos)
+            .collect()
     }
 
     fn select_core_blocks(&self, core_blocks: &[bool]) -> Self {

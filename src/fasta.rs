@@ -7,6 +7,9 @@ use needletail::{parse_sequence_path, SequenceRecord};
 
 use crate::{Alignment, Sequence};
 
+/// Reads an Alignment contained in a fasta file into the Alignment struct.
+/// The name of the Alignment is the `file_stem` (the non-extension part)
+/// of the provided path.
 pub fn parse(path: impl AsRef<Path>) -> Result<Alignment> {
     let mut sequences = vec![];
     parse_sequence_path(&path, |_| {}, |seq| sequences.push(Sequence::try_from(seq)))?;
