@@ -22,5 +22,8 @@ spam-align -h
 to see the available options.
 
 ## Why the reimplementation?
-The tool has been reimplemented because I simply could not get the original one running and I had the necessary code mostly written already. I simply extracted it from my thesis to make it reusable.
+The tool has been reimplemented because I simply could not get the original one running and I had the necessary code mostly written already. I simply extracted it from my thesis to make it reusable.  
+Most importantly it is not dependant upon the Expat xml parser or any other dynamic dependency (except libc).
 
+## TODO
+- add license
