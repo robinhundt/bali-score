@@ -1,5 +1,7 @@
 # bali-score
 
+![Rust](https://github.com/robinhundt/bali-score/workflows/Rust/badge.svg?branch=master)
+
 This tool is inspired by the original implementation of the `bali-score` tool which accompanies the [BAliBASE 3](http://www.lbgi.fr/balibase/BalibaseDownload/BAliBASE_R1-5.tar.gz) database.  
 Currently this tool only works for BAliBASE 3 reference alignments in `.xml` format which have core blocks declared. It is not possible to declare a threshold instead of core blocks.
 
